@@ -27,6 +27,8 @@ class Slidable extends StatefulWidget {
     this.direction = Axis.horizontal,
     this.dragStartBehavior = DragStartBehavior.down,
     this.useTextDirection = true,
+    this.onOffsetChanged,
+    this.controller,
     required this.child,
   }) : super(key: key);
 
@@ -50,6 +52,12 @@ class Slidable extends StatefulWidget {
   /// of the same group, open.
   /// {@endtemplate}
   final Object? groupTag;
+
+  /// On sliding left or right returns offset
+  /// This offset equals to how much space action panes occupied space
+  final Function(double)? onOffsetChanged;
+
+  final SlidableController? controller;
 
   /// A widget which is shown when the user drags the [Slidable] to the right or
   /// to the bottom.
@@ -134,7 +142,7 @@ class _SlidableState extends State<Slidable>
   @override
   void initState() {
     super.initState();
-    controller = SlidableController(this)
+    controller = (widget.controller ?? SlidableController(this))
       ..actionPaneType.addListener(handleActionPanelTypeChanged);
   }
 
@@ -243,6 +251,7 @@ class _SlidableState extends State<Slidable>
           Positioned.fill(
             child: ClipRect(
               clipper: _SlidableClipper(
+                onOffsetChange: widget.onOffsetChanged,
                 axis: widget.direction,
                 controller: controller,
               ),
@@ -303,19 +312,26 @@ class _SlidableClipper extends CustomClipper<Rect> {
   _SlidableClipper({
     required this.axis,
     required this.controller,
+    this.onOffsetChange
   }) : super(reclip: controller.animation);
 
   final Axis axis;
   final SlidableController controller;
+  final Function(double)? onOffsetChange;
 
   @override
   Rect getClip(Size size) {
     switch (axis) {
       case Axis.horizontal:
         final double offset = controller.ratio * size.width;
+        Future.delayed(Duration.zero,(){
+          onOffsetChange?.call(offset);
+        });
+
         if (offset < 0) {
           return Rect.fromLTRB(size.width + offset, 0, size.width, size.height);
         }
+
         return Rect.fromLTRB(0, 0, offset, size.height);
       case Axis.vertical:
         final double offset = controller.ratio * size.height;
