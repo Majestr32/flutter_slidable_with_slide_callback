@@ -29,7 +29,6 @@ class Slidable extends StatefulWidget {
     this.dragStartBehavior = DragStartBehavior.down,
     this.useTextDirection = true,
     this.onOffsetChanged,
-    this.controller,
     required this.child,
   });
 
@@ -61,7 +60,6 @@ class Slidable extends StatefulWidget {
   /// This offset equals to how much space action panes occupied space
   final Function(double)? onOffsetChanged;
 
-  final SlidableController? controller;
 
   /// A widget which is shown when the user drags the [Slidable] to the right or
   /// to the bottom.
